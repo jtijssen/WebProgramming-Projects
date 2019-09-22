@@ -1,0 +1,110 @@
+/*Josefine Tijssen*/
+/*Stylesheet for index.html*/
+
+body {
+  font-family: TimesNewRoman;
+  margin: 0;
+  padding: 50px;
+  font-size: 14px;
+}
+
+h1{
+    text-align: center;
+    font-family: TimesNewRoman;
+    color: black;
+}
+
+h5{
+  text-align: center;
+}
+
+h2{
+	font-weight: bold;
+}
+
+#img1 img {
+  float: center;
+  height: 25px;
+  width: 100%;
+}
+
+#img2 img{
+  height: 350px;
+  width: 50%;
+  float: center;
+  padding: 8px;
+  padding-left: 15px;
+}
+
+#img3 img{
+  height: 20px;
+  width: 50%;
+  float: center;
+  padding-left: 15px;
+}
+
+#img4 img{
+  height: 30px;
+  width: 50%;
+  float: center;
+  padding-left: 15px;
+  padding-top: 5px;
+}
+
+#img5 img{
+  height: 20px;
+  width: 30%;
+  float: center;
+  padding-left: 15px;
+  padding-top: 5px;
+}
+
+#img6 img{
+  height: 15px;
+  width: 50%;
+  float: center;
+  padding-left: 15px;
+  padding-top: 5px;
+}
+
+#img7 img{
+  float: center;
+  height: 100px;
+  padding-left: 15px;
+  width: 30%;
+  padding-top: 5px;
+}
+
+#img8 img{
+  height: 15px;
+  width: 40%;
+  float: center;
+  padding-left: 15px;
+  padding-top: 5px;
+}
+
+#img9 img{
+  height: 400px;
+  width: 50%;
+  float: center;
+  padding-left: 15px;
+    padding-top: 8px;
+}
+
+#img10 img{
+  height: 50px;
+  width: 30%;
+  float: center;
+  padding-left: 15px;
+    padding-top: 8px;
+}
+
+#note{
+  vertical-align: super;
+  font-size: 8px;
+}
+
+#txt1 {
+    font-weight: bold;
+    text-decoration: underline;
+}

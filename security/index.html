@@ -1,0 +1,100 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<title>Assignment 4 Josefine Tijssen</title>
+	<meta charset="utf-8"/>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<h1>Security Assesment</h1>
+	<h5>Josefine Tijssen</h5>
+	<p><div id="img1"><img src="SecurityPic.png" alt="Map banner image"/></div></p>
+	<h2>Introduction</h2>
+	<p>This report is on the security of the client-side and the server-side code written by Josue Llamas-Rodriguez for Comp20. </p>
+	<p>The main goal of the product that was analyzed is to provide a platform on which passengers and vehicles can find each other to make ridesharing possible. Security is a great concern for web applications, especially for one that handles user data like this one does. To protect the privacy of the users of this app, I was hired to find the potential vulnerabilities of this web application. In this report, I will outline the way I tested the application, what tools were used, the vulnerabilities that were found, and recommendations on how these vulnerabilities can be prevented.</p>
+	<p>The web application had the following features or Application Programming Interfaces (APIs) in addition to the ridesharing map:</p>
+	<ul>
+		<li>A POST <span id="txt1">/rides</span> API</li>
+		<ul>
+			<li>This returns a JSON string of either passengers or vehicles, depending on the input. The input is then added to the corresponding list of drivers or passengers who have been seen within the last three minutes.</li>
+		</ul>
+		<li>A GET <span id="txt1">/passenger.json</span> API</li>
+		<ul>
+			<li>This returns a list of all records for a given username as a JSON string if the passenger exists in the MongoDB collection.</li>
+		</ul>
+		<li>A GET <span id="txt1">/</span> (This is the root/index page)</li>
+		<ul>
+			<li>This returns an HTML page with a list of all the vehicles with their usernames in the database in descending order by timestamp.</li>
+		</ul>
+	</ul>
+	<p>The client side code implemented an interface to view this data on a map for potential users. Users could click on themselves to see the nearest passenger or vehicle.</p>
+	<h2>Methodology</h2>
+	<p>The tools that were used to test the application:</p>
+	<ul>
+		<li>Developer tools</li>
+		<li>Curl</li>
+	</ul>
+	<p>I first tested the application without looking at the source code by loading the web pages and analyzing them using developer tools. After that, I used curl requests to test if the webpage was vulnerable to Cross-Site scripting. Lastly, I looked at the source code for other vulnerabilities.</p>
+	<h2>Abstract of Findings</h2>
+	<p>I identified multiple security and privacy issues. Firstly, the privacy of the drivers is not protected because their data is shared on a webpage with no protection. Furthermore, the hardcoded credentials gives malicious actors access to the database and thus all the user data. Additionally, users can be presented with fraudulent web content, which can lead to their cookie information being stolen. Also, the web application allows sharing with every origin, so any site can access the server's response.</p>
+	<p>To ensure that readers of this report can easily read more on the vulnerabilities found and their potential solutions, I added the CWE codes and reference to each found vulnerability.</p>
+
+	<h2>Issues Found</h2>
+	<ul>
+		<li>Exposure of where each vehicle was and when.</li>
+		<ul>
+			<li>CWE359: Exposure of Private Information. Read more <a href="https://cwe.mitre.org/data/definitions/359.html" target="_blank">here.</a></li>
+			<li>This issue is found by sending a GET request to the heroku URL for the server, namely at location <a href="http://enigmatic-savannah-43287.herokuapp.com/" target="_blank">http://enigmatic-savannah-43287.herokuapp.com/</a>.</li>
+			<li>The severity of this issue is high. Every vehicle that ever entered the database can be viewed by anyone that sends a GET request to this URL, either through curl or by putting it into their webbrowser. While this page was intentionally created, it is a gross violation of the privacy of the drivers.</li>
+			<li>By following the aforementioned link, anyone can get to the page, pictured below. <div id="img9"><img src="privacy.png" alt="Image of the page with a log of all the vehicles"/></div> As you can see, this page shows all vehicles on record, without even asking for any form of credentials.</li>
+			<li>While this page was intentionally created, it should be secured by a password so that only those who have permission to view it can actually gain access to it. If the page needs to be publicly accessible, make it so that only current drivers are visible and only their most recent location, not their entire driving history.</li>
+		</ul><br>
+
+		<li>Hardcoded credentials in the server code.</li>
+		<ul>
+			<li>CWE-798: Use of Hard-coded Credentials. Read more <a href="https://cwe.mitre.org/data/definitions/798.html" target="_blank">here</a>.</li>
+			<li>This issue is found within the server.js code, specifically as part of the code to connect to the database.</li>
+			<li>The severity of this issue is medium. This code generally is not visible, but it is still very bad practice to include this information hardcoded. If a developer were to copy some of the code, ask for assistance in debugging, or if servercode was accidentally shared, this could compromise the database. There are many ways one can get access to the database server code, such as when the database is down, and this way a malicious actor can log into the database, have access to all the data, and be able to delete this data. See the screenshot below for the hardcoded credentials. The creator even admitted with his comment that this URI contains his account information.
+			<div id="img4"><img src="credProof.png" alt="Image of the hardcoded credentials"/></div>
+			The URL is set up according to the format shown in the next screenshot.
+			<div id="img5"><img src="URIex.png" alt="Example of the URI format"/></div>
+			So we know that the username of the Database is heroku_m2l5lw30 and that the password is r77ge39luiit0iinn495iia3gq.</li>
+			<li>This vulnerability can be prevented by connecting to the database the following way instead of through a hardcoded URL with hardcoded credentials.
+			<div id="img6"><img src="FixEx.png" alt="Example of preventing hardcoded credentials"/></div>
+			This way you do not need to hardcode a password and username. Instead, the credentials are stored in the system environment generated by Heroku. Log-in information should be stored in an environment variable or other file.</li><br>
+		</ul>
+		<li>Cross-Site Scripting (XSS) on the /passenger.json page.</li>
+			<ul>
+				<li>CWE-79: Improper Neutralization of Input During Web Page Generation. Read more <a href="https://cwe.mitre.org/data/definitions/79.html" target="_blank">here</a>.</li>
+				<li>This issue is found on the /passenger.json page, specifically it is an issue that takes place when getting data send from a user to the server.</li>
+				<li>The severity of this issue is high. This is because XSS can use malicious JavaScript to gain access to user sensitive information such as cookie information, send HTTP request to other destinations, and make modifications to the HTML by manipulating the Document Object Model (DOM). A user's cookie can be used to get sensetive information like a session ID. Furthermore an attacker can change the HTML to make the page display a fake login page, which can then be used to trick the user into submitting sensitive information - also known as phishing. The next screenshot provides proof of an alert that has been added using XSS. Instead of an innocent alert, a malicious actor could add a dangerous script. A user would get to this webpage for example by being sent a link through email.</li>
+				<div id="img2"><img src="XSSproof.png" alt="Image of XSS consequence"/></div>
+				<li>This vulnerability can be exploited by sending a post request with a malicious script as username to the server, and then going to the passenger.json?username=&lt;script&gt;...&lt;/script&gt; webpage. See the following screenshot for an example.</li>
+				<div id="img3"><img src="XSShowto.png" alt="Image of the string to implement the XSS"/></div>
+				<li>To prevent this issue, you need to ensure that user input can not interpreted as code. One can do this by converting the < character into <span>&</span>lt and the > character into <span>&</span>gt. This can be done in javascript, by adding the following code after the user input is received but before it is send to the database. In this example, the variable <span id="txt1">unsafe</span> is the raw user input<span id="note">1</span>.</li>
+				<div id="img7"><img src="XSSprev.png" alt="Image of how to prevent XSS"/></div>
+			</ul><br>
+		<li>Access-Control-Allow-Origin is enabled for sharing with every origin.</li>
+			<ul>
+				<li>CWE-346: Origin Validation Error. Read more <a href="https://cwe.mitre.org/data/definitions/346.html" target="_blank">here</a>.</li>
+				<li>This issue is found within the server.js code, specifically when setting the response header.</li>
+				<li>The severity of this issue is high. By having the response be with ("Access-Control-Allow-Origin", "*"), the requested resource allows sharing with every origin<span id="note">2</span>. Therefore, any site can send an XHR request to the application and access the server's response. Simply put, anyone can use curl to send a post request as a vehicle or passenger and thus get the last known location of every passenger or vehicle that was on the network. This is a huge privacy issue and compromises the trust users have in the application.</li> 
+				<li>It is specifically the following code that causes this issue.
+					<div id="img8"><img src="cors.png" alt="Image of the code with the CORS vulnerability"/></div></li>
+				<li>This problems can be solved by adding the 'withCredentials' property to the XMLHttpRequest<span id="note">3</span>. This property ensures that CORS requests should be made using credentials such as cookies or authorization headers. The following code is an example of how to add the 'withCredentials' property. <div id="img10"><img src="SolveCors.png" alt="Image of the code to add the property"/></div>
+				</li>
+			</ul>
+	</ul>
+	<h2>Conclusion</h2>
+	<p>In conclusion, there are many ways the security and privacy of this web application can be inproved. To protect the privacy of its users, a password should be required to access the page with all the vehicles on record. Building on that, the credentials of the database should never be a hardcoded string. To prevent XSS, which can be used to gain access to user information such as cookies, all user input should never be interpreted as code. Lastly, it should be ensured that CORS requests only with the correct credentials receive a response.</p> 
+	<p>For the future I recommend looking into the <a href="https://www.owasp.org/index.php/Category:OWASP_Top_Ten_Project" target="_blank">OWASP Top Ten</a>, which shows the top ten web application security risks, along with how these vulnerabilities can be prevented. Furthermore, one can also use tools such as the <a href="https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project" target="_blank">OWASP Zed Attack Proxy (ZAP)</a> to find security vulnerabilities. Certain vulnerabilities, such as database injection and XSS have been known to cause problems for close to a decade, yet they are still extremely prevalent due to programmers not implementing prevention measures. While correctly securing your website is a time commitment, especially while the field of security and thus the vulnerabilities are constantly evolving, protecting the data of users should be your top priority.</p>
+	<h2>References</h2>
+	<p> 1. https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript</p>
+	<p> 2. https://stackoverflow.com/questions/12001269/what-are-the-security-risks-of-setting-access-control-allow-origin</p>
+	<p> 3. https://xhr.spec.whatwg.org/#the-withcredentials-attribute</p>
+	<p> - http://www.veracode.com/security/xss</p>
+	<p> - https://stackoverflow.com/questions/9713644/when-is-it-safe-to-enable-cors/9725695#9725695</p>
+</body>
+
+</html>
